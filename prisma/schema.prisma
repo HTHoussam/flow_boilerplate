@@ -8,12 +8,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Person {
+model Player {
   id              Int       @default(autoincrement()) @id
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   firstName       String    @db.VarChar(255)
   lastName        String    @db.VarChar(255)
-  email           String @db.VarChar(255)
-  password        String @db.VarChar(255)
+  salary          String? @db.VarChar(255)
+  currency        String? @db.VarChar(20)
+  pictureURl      String? @db.VarChar(255)
+  goals           Int? @db.Int
 }
