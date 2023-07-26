@@ -1,16 +1,27 @@
-export interface GetPlayersResponse {
-  message: string
-  status: number
-  players: Array<Object>
-}
-export interface PlayersType {
-  id: number
+export interface PlayerType {
+  id?: number
   firstName: string
   lastName: string
   salary?: string
   currency?: string
   pictureURl?: string
   goals?: number
+}
+export interface PrismaPlayerType {
+  id: number
+  createdAt: Date | null
+  updatedAt: Date | null
+  firstName: string
+  lastName: string
+  salary: string | null
+  currency: string | null
+  pictureURl: string | null
+  goals: string | null
+}
+export interface GetPlayersResponse {
+  message: string
+  status: number
+  players: Array<PlayerType>
 }
 export enum Currency {
   USD = '$',
@@ -23,5 +34,5 @@ export enum Currency {
 export interface PaginationType {
   page: number
   limit: number
-  total: number
+  totalPages: number
 }
