@@ -12,9 +12,14 @@ export const usePlayersHook = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const getPlayersCount = async (): Promise<void> => {
-    const result = await fetch(`${process.env.NEXT_PUBLIC_API ?? 'http://localhost:3000'}/api/players/count`, {
-      cache: 'force-cache',
-    })
+    const result = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_API ?? 'http://localhost:3000'
+      }/api/players/count`,
+      {
+        cache: 'force-cache',
+      },
+    )
     if (result.ok) {
       const r = await result.json()
       setPaginationState((prev) => ({
