@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { PlayerType, PaginationType } from './types'
 
+export const getAbsoluteURL = () => {
+  const baseURL = process.env.NEXT_PUBLIC_VERCEL_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : 'http://localhost:3000'
+  return baseURL
+}
+
 export const usePlayersHook = () => {
   const [players, setPlayers] = useState<Array<PlayerType>>([])
   const [paginationState, setPaginationState] = useState<PaginationType>({
@@ -12,14 +19,9 @@ export const usePlayersHook = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const getPlayersCount = async (): Promise<void> => {
-    const result = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_API ?? 'http://localhost:3000'
-      }/api/players/count`,
-      {
-        cache: 'force-cache',
-      },
-    )
+    const result = await fetch(`${getAbsoluteURL}/api/players/count`, {
+      cache: 'force-cache',
+    })
     if (result.ok) {
       const r = await result.json()
       setPaginationState((prev) => ({
@@ -33,9 +35,7 @@ export const usePlayersHook = () => {
     setIsLoading(true)
     try {
       const data = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_API ?? 'http://localhost:3000'
-        }/api/players?page=${paginationState.page - 1}&limit=${paginationState.limit}`,
+        `${getAbsoluteURL}/api/players?page=${paginationState.page - 1}&limit=${paginationState.limit}`,
         {
           next: {
             revalidate: 0,
