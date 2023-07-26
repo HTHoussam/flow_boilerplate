@@ -17,7 +17,7 @@ export const usePlayersHook = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const getPlayersCount = async (): Promise<void> => {
-    const result = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/players/count`, {
+    const result = await fetch(`${getAbsoluteURL}/api/players/count`, {
       cache: 'force-cache',
     })
     if (result.ok) {
@@ -33,9 +33,7 @@ export const usePlayersHook = () => {
     setIsLoading(true)
     try {
       const data = await fetch(
-        `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/players?page=${paginationState.page - 1}&limit=${
-          paginationState.limit
-        }`,
+        `${getAbsoluteURL}/api/players?page=${paginationState.page - 1}&limit=${paginationState.limit}`,
         {
           next: {
             revalidate: 0,
