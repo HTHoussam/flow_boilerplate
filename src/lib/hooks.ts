@@ -28,9 +28,9 @@ export const usePlayersHook = () => {
     setIsLoading(true)
     try {
       const data = await fetch(
-        `${process.env.NEXT_PUBLIC_API ?? 'http://localhost:3000'}/api/players?page=${paginationState.page - 1}&limit=${
-          paginationState.limit
-        }`,
+        `${
+          process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_API ?? 'http://localhost:3000'
+        }/api/players?page=${paginationState.page - 1}&limit=${paginationState.limit}`,
         {
           next: {
             revalidate: 0,
