@@ -7,14 +7,13 @@ async function main() {
     firstName: d.firstname,
     lastName: d.lastname,
     currency: d.devise,
-    goals: d.goal,
+    goals: d.goal.toString(),
     pictureURl: d.pictureURl,
     salary: d.salary.toString(),
   }))
   const d = await prisma.player.createMany({
-    data: dataToSeed as any,
+    data: dataToSeed,
   })
-  console.log('SEEED', d)
 }
 
 main()
