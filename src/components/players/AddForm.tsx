@@ -1,96 +1,113 @@
 'use client'
 
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { toast } from 'react-toastify'
+import { PlayerSchemaType, playerSchema } from '@/lib/validation/schema'
+import { PlayerType } from '@/lib/types'
+import { onSubmit, onSubmitUpdate } from '@/lib/helpers'
 
-const AddForm = () => {
-  const playerSchema = z
-    .object({
-      firstName: z.string({ required_error: 'champ obligatoire' }).min(1),
-      lastName: z.string({ required_error: 'champ obligatoire' }).min(1),
-      salary: z.string().min(1, { message: 'trop court' }).optional(),
-      goals: z
-        .string()
-        .transform((val) => parseInt(val))
-        .optional(),
-      currency: z.string().optional(),
-    })
-    .refine((data) => ['$', 'MAD', '€', '£', 'Fr'].includes(data.currency ?? ''), {
-      message: 'devise inconnue',
-    })
-
-  type Player = z.infer<typeof playerSchema>
+const AddForm = ({ playerData, isEditMode = false }: { playerData?: PlayerType; isEditMode?: boolean }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Player>({
+  } = useForm<PlayerSchemaType>({
     resolver: zodResolver(playerSchema),
+    defaultValues: {
+      id: playerData?.id ?? 0,
+      firstName: playerData?.firstName ?? '',
+      lastName: playerData?.lastName ?? '',
+      currency: playerData?.currency ?? '$',
+      goals: playerData?.goals?.toString() ?? '0',
+      salary: playerData?.salary ?? '0',
+    },
   })
-  const onSubmit: SubmitHandler<Player> = async (data) => {
-    try {
-      const r = await fetch('/api/players/add', {
-        method: 'POST',
-        body: JSON.stringify({ player: data }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (r && r.status === 200) {
-        toast('Toast is good', { hideProgressBar: true, autoClose: 2000, type: 'success' })
-      }
-    } catch (e: any) {
-      toast(`Error:${e.message}`, { hideProgressBar: true, autoClose: 2000, type: 'error' })
-    }
-  }
+
   return (
     <div>
       <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="border-2 flex flex-col space-y-5 max-w-6xl mx-auto items-center p-4 mb-16"
+        onSubmit={isEditMode ? handleSubmit(onSubmitUpdate) : handleSubmit(onSubmit)}
+        className="grid grid-cols-1 grid-flow-row gap-8 py-8 px-20"
       >
-        <div className="w-full">
+        <div className="w-full flex flex-col ">
           <input
             required
+            className="h-10 border-2 border-gray-500 shadow-sm rounded-sm hover:shadow-md hover:border-none focus:shadow-md focus:border-none px-4 "
             placeholder="prenom*"
             {...register('firstName')}
             name="firstName"
             type="text"
             id="firstName"
           />
-          {errors && errors.firstName && <span>{errors.firstName.message}</span>}
+          {errors && errors.firstName && (
+            <span className="p-4 my-2 bg-red-400 text-sm shadow-sm rounded-sm">{errors.firstName.message}</span>
+          )}
         </div>
-        <div className="w-full">
-          <input required placeholder="nom*" {...register('lastName')} name="lastName" type="text" id="lastName" />
-          {errors && errors.lastName && <span>{errors.lastName.message}</span>}
+        <div className="w-full flex flex-col">
+          <input
+            required
+            className="h-10 border-2 border-gray-500 shadow-sm rounded-sm hover:shadow-md hover:border-none focus:shadow-md focus:border-none px-4 "
+            placeholder="nom*"
+            {...register('lastName')}
+            name="lastName"
+            type="text"
+            id="lastName"
+          />
+          {errors && errors.lastName && (
+            <span className="p-4 my-2 bg-red-400 text-sm shadow-sm rounded-sm">{errors.lastName.message}</span>
+          )}
         </div>
-        <div className="w-full">
-          <input placeholder="salaire annuelle" {...register('salary')} name="salary" type="text" id="salary"></input>
-          {errors && errors.salary && <span>{errors.salary.message}</span>}
+        <div className="w-full flex flex-col">
+          <input
+            className="h-10 border-2 border-gray-500 shadow-sm rounded-sm hover:shadow-md hover:border-none focus:shadow-md focus:border-none px-4 "
+            placeholder="salaire annuelle"
+            {...register('salary')}
+            name="salary"
+            type="text"
+            id="salary"
+          ></input>
+          {errors && errors.salary && (
+            <span className="p-4 my-2 bg-red-400 text-sm shadow-sm rounded-sm">{errors.salary.message}</span>
+          )}
         </div>
-        <div className="w-full">
-          <input placeholder="but*" {...register('goals')} name="goals" type="text" id="goals"></input>
-          {errors && errors.goals && <span>{errors.goals.message}</span>}
+        <div className="w-full flex flex-col">
+          <input
+            className="h-10 border-2 border-gray-500 shadow-sm rounded-sm hover:shadow-md hover:border-none focus:shadow-md focus:border-none px-4 "
+            placeholder="but*"
+            {...register('goals')}
+            name="goals"
+            type="text"
+            id="goals"
+          ></input>
+          {errors && errors.goals && (
+            <span className="p-4 my-2 bg-red-400 text-sm shadow-sm rounded-sm">{errors.goals.message}</span>
+          )}
         </div>
-        <div className="w-full">
-          <select defaultValue={'$'} {...register('currency')}>
-            {['$', 'MAD', '€', '£', 'Fr'].map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          {errors && errors.firstName && <span>{errors.firstName.message}</span>}
-        </div>
-        <div>
-          <button
-            type="submit"
-            className="w-full shadow-md rounded-sm p-4 bg-blue-500 border-1 border-blue-200 hover:border-none focus:border-none"
-          >
-            submit
-          </button>
+        <div className="w-full flex gap-16">
+          <div className="flex-grow">
+            <select
+              className="h-10 w-full border-2 border-gray-500 shadow-sm rounded-sm hover:shadow-md hover:border-none focus:shadow-md focus:border-none px-4"
+              defaultValue={'$'}
+              {...register('currency')}
+            >
+              {['$', 'MAD', '€', '£', 'Fr'].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {errors && errors.firstName && (
+              <span className="p-4 my-2 bg-red-400 text-sm shadow-sm rounded-sm">{errors.firstName.message}</span>
+            )}
+          </div>
+          <div className="flex-grow">
+            <button
+              type="submit"
+              className="w-full h-10 shadow-md my-auto rounded-sm bg-blue-500 border-1 border-blue-200 hover:border-none focus:border-none"
+            >
+              submit
+            </button>
+          </div>
         </div>
       </form>
     </div>
