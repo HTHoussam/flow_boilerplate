@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
+import NavBar from '@/components/players/core/NavBar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -14,10 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <main>{children}</main>
-        <section>
-          <ToastContainer />
-        </section>
+        <NavBar />
+        <main className="h-screen max-w-6xl my-0 mx-auto p-0">{children}</main>
+        <div>
+          <ToastContainer position="bottom-center" />
+        </div>
       </body>
     </html>
   )
