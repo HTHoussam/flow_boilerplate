@@ -1,15 +1,108 @@
 'use server'
 
 import prisma from '@/lib/prisma'
-
-export async function deletePlayer(id: number) {
-  const deletedUser = await prisma.player.delete({
+import { PlayerType } from '@/lib/types'
+import { PlayerSchemaType, playerSchema } from '@/lib/validation/schema'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+interface submitActionReturn {
+  status: number
+  error: boolean
+  message?: string
+}
+export async function deletePlayerAction(player: PlayerType) {
+  const isPlayerExist = await prisma.player.findFirst({
     where: {
-      id: id,
+      firstName: {
+        equals: player.firstName,
+      },
+      AND: {
+        lastName: {
+          equals: player.lastName,
+        },
+      },
     },
   })
+  if (!isPlayerExist || Object.entries(isPlayerExist).length <= 0) return
+  const deletedPlayer = await prisma.player.delete({
+    where: {
+      id: isPlayerExist.id,
+    },
+  })
+  console.log('deletedPlayer', deletedPlayer)
+}
+export async function submitPlayerAction(newPlayer: PlayerSchemaType): Promise<submitActionReturn> {
+  if (!newPlayer || Object.keys(newPlayer).length <= 0) {
+    return { status: 502, error: true, message: 'pas de donnees' }
+  }
+
+  const result = playerSchema.safeParse(newPlayer)
+
+  if (!result.success) {
+    return { status: 503, error: true, message: 'Erreur: type donnees' }
+  }
+  try {
+    const isPlayerExist = await prisma.player.findFirst({
+      where: {
+        firstName: {
+          equals: result.data.firstName,
+        },
+        AND: {
+          lastName: {
+            equals: result.data.lastName,
+          },
+        },
+      },
+    })
+
+    if (isPlayerExist) {
+      return { message: 'jouer existe deja', error: true, status: 403 }
+    }
+    delete result.data.id
+    const insertResult = await prisma.player.create({
+      data: {
+        ...result.data,
+      },
+    })
+
+    if (!insertResult || Object.keys(insertResult).length <= 0) {
+      return { status: 503, error: true, message: `Erreur: lors de l'insertion` }
+    }
+    return { message: 'success', error: false, status: 200 }
+  } catch (e) {
+    return { message: `Erreur:lors de l'insertion`, error: true, status: 503 }
+  }
 }
 
-export async function playerCount() {
-  return await prisma.player.count()
+export async function updatePlayerAction(updatedPlayer: PlayerSchemaType): Promise<submitActionReturn> {
+  if (!updatedPlayer || Object.keys(updatedPlayer).length <= 0) {
+    return { status: 502, error: true, message: 'pas de donnees' }
+  }
+
+  const result = playerSchema.safeParse(updatedPlayer)
+
+  if (!result.success) {
+    return { status: 503, error: true, message: 'Erreur: type donnees' }
+  }
+  try {
+    const updateResult = await prisma.player.updateMany({
+      where: {
+        id: {
+          equals: result.data.id,
+        },
+      },
+      data: {
+        ...result.data,
+      },
+    })
+
+    if (!updateResult || Object.keys(updateResult).length <= 0 || updateResult.count <= 0) {
+      return { status: 503, error: true, message: 'Erreur: lors de mis a jour' }
+    }
+    return { message: 'success', error: false, status: 200 }
+  } catch (error: any) {
+    if (error instanceof PrismaClientKnownRequestError)
+      return { status: 503, error: true, message: `Erreur: ${error.message}` }
+
+    return { status: 503, error: true, message: 'Erreur: lors de mis a jour' }
+  }
 }
