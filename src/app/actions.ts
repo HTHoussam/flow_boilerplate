@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma'
 import { PlayerType } from '@/lib/types'
 import { PlayerSchemaType, playerSchema } from '@/lib/validation/schema'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getBase64 } from '@/lib/helpers'
+
 interface submitActionReturn {
   status: number
   error: boolean
@@ -40,6 +43,25 @@ export async function submitPlayerAction(newPlayer: PlayerSchemaType): Promise<s
   if (!result.success) {
     return { status: 503, error: true, message: 'Erreur: type donnees' }
   }
+  // store the image to s3 and store s3 link to db
+
+  const s3 = new S3Client({
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY ?? '',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+    },
+    region: process.env.S3_BUCKET_REGION ?? '',
+  })
+  console.log('newPlayer.pictureURl?.imageType', newPlayer.pictureURl?.imageType)
+  const s3Params = {
+    Bucket: process.env.S3_BUCKET_NAME ?? '',
+    Key: newPlayer.pictureURl?.imageName,
+    Body: newPlayer.pictureURl?.binary,
+    ContentType: newPlayer.pictureURl?.imageType,
+  }
+  const command = new PutObjectCommand(s3Params)
+  const r = await s3.send(command)
+
   try {
     const isPlayerExist = await prisma.player.findFirst({
       where: {
@@ -57,10 +79,12 @@ export async function submitPlayerAction(newPlayer: PlayerSchemaType): Promise<s
     if (isPlayerExist) {
       return { message: 'jouer existe deja', error: true, status: 403 }
     }
+
     delete result.data.id
     const insertResult = await prisma.player.create({
       data: {
         ...result.data,
+        pictureURl: Buffer.from(result.data.pictureURl as any, 'base64'),
       },
     })
 
@@ -69,7 +93,7 @@ export async function submitPlayerAction(newPlayer: PlayerSchemaType): Promise<s
     }
     return { message: 'success', error: false, status: 200 }
   } catch (e) {
-    return { message: `Erreur:lors de l'insertion`, error: true, status: 503 }
+    return { message: `Erreur: `, error: true, status: 503 }
   }
 }
 
@@ -92,6 +116,7 @@ export async function updatePlayerAction(updatedPlayer: PlayerSchemaType): Promi
       },
       data: {
         ...result.data,
+        pictureURl: Buffer.from(result.data.pictureURl as any, 'base64'),
       },
     })
 

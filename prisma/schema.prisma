@@ -16,7 +16,7 @@ model Player {
   lastName        String    @db.VarChar(255)
   salary          String?   @db.VarChar(255)    @default("0")
   currency        String?   @db.VarChar(20)     @default("USD") 
-  pictureURl      String?   @db.VarChar(255)    @default("default_picture_url.jpg")
+  pictureURl      Bytes? 
   goals           String?   @db.VarChar(255) @default("0")
   
   @@unique([firstName, lastName], name: "playerIdentifier")

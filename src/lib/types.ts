@@ -4,7 +4,7 @@ export interface PlayerType {
   lastName: string
   salary?: string
   currency?: string
-  pictureURl?: string
+  pictureURl?: string | Buffer
   goals?: number
 }
 export interface PrismaPlayerType {
@@ -15,7 +15,7 @@ export interface PrismaPlayerType {
   lastName: string
   salary: string | null
   currency: string | null
-  pictureURl: string | null
+  pictureURl: string | null | Buffer
   goals: string | null
 }
 export interface GetPlayersResponse {
