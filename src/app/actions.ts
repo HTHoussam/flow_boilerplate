@@ -31,7 +31,6 @@ export async function deletePlayerAction(player: PlayerType) {
       id: isPlayerExist.id,
     },
   })
-  console.log('deletedPlayer', deletedPlayer)
 }
 export async function submitPlayerAction(newPlayer: PlayerSchemaType): Promise<submitActionReturn> {
   if (!newPlayer || Object.keys(newPlayer).length <= 0) {
@@ -52,7 +51,6 @@ export async function submitPlayerAction(newPlayer: PlayerSchemaType): Promise<s
     },
     region: process.env.S3_BUCKET_REGION ?? '',
   })
-  console.log('newPlayer.pictureURl?.imageType', newPlayer.pictureURl?.imageType)
   const s3Params = {
     Bucket: process.env.S3_BUCKET_NAME ?? '',
     Key: newPlayer.pictureURl?.imageName,
