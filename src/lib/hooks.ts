@@ -4,6 +4,7 @@ import { PlayerType, PaginationType } from './types'
 
 export const getAbsoluteURL = () => {
   const baseURL = process.env.NEXT_PUBLIC_VERCEL_URL ? `${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:3000'
+  console.log('baseURL', baseURL)
   return baseURL
 }
 
@@ -18,7 +19,7 @@ export const usePlayersHook = () => {
 
   const getPlayersCount = async (): Promise<void> => {
     console.log('process.env.NEXT_PUBLIC_VERCEL_URL', process.env.NEXT_PUBLIC_VERCEL_URL)
-    const result = await fetch(`http://localhost:3000/api/players/count`, {
+    const result = await fetch(`${getAbsoluteURL()}/api/players/count`, {
       cache: 'force-cache',
     })
     if (result.ok) {
